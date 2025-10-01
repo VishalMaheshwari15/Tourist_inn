@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.example.com/</loc><priority>1.0</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://www.example.com/rooms</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://www.example.com/amenities</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.example.com/gallery</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.example.com/contact</loc><priority>0.5</priority><changefreq>yearly</changefreq></url>
+  <url><loc>https://www.example.com/booking</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://www.example.com/privacy</loc></url>
+  <url><loc>https://www.example.com/terms</loc></url>
+  <url><loc>https://www.example.com/refunds</loc></url>
+</urlset>

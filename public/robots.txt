@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Block noise
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+
+Sitemap: https://www.example.com/sitemap.xml

@@ -1,0 +1,32 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body { @apply bg-surface text-ink antialiased overflow-x-hidden; }
+  img, svg, video { display: block; max-width: 100%; height: auto; }
+}
+
+/* Reusable premium primitives */
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-container px-4 md:px-6; }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2
+           text-sm font-medium transition focus:outline-none
+           focus-visible:ring-2 focus-visible:ring-accent-300;
+  }
+  .btn-primary { @apply bg-ink text-white hover:bg-slate-800; }
+  .btn-ghost   { @apply bg-transparent text-ink hover:bg-accent-100; }
+
+  .chip {
+    @apply inline-flex items-center rounded-full border border-line bg-white/60
+           px-3 py-1 text-xs font-medium text-mute;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line bg-white p-6 shadow-sm;
+  }
+}
