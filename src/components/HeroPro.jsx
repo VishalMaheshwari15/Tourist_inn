@@ -1,4 +1,4 @@
-// src/components/HeroPro.jsx — Ultra Premier Slider (autoplay + bulletproof CTA behavior)
+// src/components/HeroPro.jsx — Ultra Premier Slider (no white flash on scroll/transition)
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,11 +7,7 @@ const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const WA = (t = "Hello Tourist Inn Grand, I'd like to book. Please share availability & rates.") =>
   `https://wa.me/9607860882?text=${encodeURIComponent(t)}`;
 
-/* SmartLink:
-   - "#..." => smooth scroll
-   - "/..." => <Link>
-   - else   => <a>
-   ALWAYS stopPropagation so banner onClick won't fire. */
+/* SmartLink */
 function SmartLink({ href, className = "", children, ...rest }) {
   const smooth = (e) => {
     e.stopPropagation();
@@ -37,13 +33,7 @@ function SmartLink({ href, className = "", children, ...rest }) {
   }
   if (typeof href === "string" && href.startsWith("#")) {
     return (
-      <a
-        href={href}
-        className={className}
-        data-stop-banner
-        onClick={smooth}
-        {...rest}
-      >
+      <a href={href} className={className} data-stop-banner onClick={smooth} {...rest}>
         {children}
       </a>
     );
@@ -72,7 +62,7 @@ function SmartLink({ href, className = "", children, ...rest }) {
  * - transitionMs: number crossfade (default: 900)
  * - showDots/arrows/progress: booleans
  * - bannerHref: string | null (default: "/tourist-inn-grand")
- * - ignoreReducedMotion: boolean (default: true)  // force autoplay even if OS has reduce motion
+ * - ignoreReducedMotion: boolean (default: true)
  */
 export default function HeroPro({
   slides: extSlides,
@@ -102,10 +92,11 @@ export default function HeroPro({
   const prev = () => setI((v) => (v - 1 + slides.length) % slides.length);
   const go = (idx) => setI(clamp(idx, 0, slides.length - 1));
 
-  // --- AUTOPLAY (robust): interval + fallback timeout, pauses on hover/focus/hidden
+  // --- AUTOPLAY (robust)
   useEffect(() => {
     const reduceBlock = prefersReduced && !ignoreReducedMotion;
-    const shouldRun = slides.length > 1 && autoPlay && !reduceBlock && !hover && !focusWithin && !document.hidden;
+    const shouldRun =
+      slides.length > 1 && autoPlay && !reduceBlock && !hover && !focusWithin && !document.hidden;
 
     const clearTimers = () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -116,9 +107,7 @@ export default function HeroPro({
 
     clearTimers();
     if (shouldRun) {
-      // main interval
       intervalRef.current = setInterval(next, duration);
-      // fallback timeout (rare Safari tab-throttle edge)
       timeoutRef.current = setTimeout(next, duration + 250);
     }
 
@@ -161,10 +150,13 @@ export default function HeroPro({
     if (dx > dy && dx > 10) e.preventDefault();
   };
   const onTouchEnd = (e) => {
-    const d = touch.current; if (!d.dragging) return;
+    const d = touch.current;
+    if (!d.dragging) return;
     const t = e.changedTouches[0];
-    const dx = t.clientX - d.x; const dt = Date.now() - d.t;
-    const fast = dt < 400 && Math.abs(dx) > 30; const far = Math.abs(dx) > 70;
+    const dx = t.clientX - d.x;
+    const dt = Date.now() - d.t;
+    const fast = dt < 400 && Math.abs(dx) > 30;
+    const far = Math.abs(dx) > 70;
     if (fast || far) (dx < 0 ? next() : prev());
     touch.current.dragging = false;
   };
@@ -178,15 +170,19 @@ export default function HeroPro({
   // Whole banner click -> route
   const onBannerClick = (e) => {
     if (!bannerHref) return;
-    // ignore any click within controls/links/buttons
     if (e.target.closest("[data-stop-banner],a,button,[role='button']")) return;
     if (bannerHref.startsWith("/")) navigate(bannerHref);
     else window.location.href = bannerHref;
   };
 
-  // Default CTAs
   const defaultCTAs = [
-    { label: "Book Now", href: WA("Booking — Tourist Inn Grand (dates/guests):"), variant: "primary", target: "_blank", rel: "noreferrer" },
+    {
+      label: "Book Now",
+      href: WA("Booking — Tourist Inn Grand (dates/guests):"),
+      variant: "primary",
+      target: "_blank",
+      rel: "noreferrer",
+    },
     { label: "Explore Rooms", href: "#rooms", variant: "ghost" },
     { label: "View Gallery", href: "#gallery", variant: "ghost" },
   ];
@@ -195,7 +191,7 @@ export default function HeroPro({
 
   return (
     <section
-      className="relative isolate overflow-hidden w-screen cursor-pointer"
+      className="relative isolate overflow-hidden w-screen cursor-pointer bg-black" // <- hard black base
       onClick={onBannerClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -206,10 +202,11 @@ export default function HeroPro({
       onTouchEnd={onTouchEnd}
       aria-roledescription="carousel"
       aria-label="Hero image carousel"
+      style={{ contain: "paint", backfaceVisibility: "hidden" }}
     >
       <style>{`
         @media (prefers-reduced-motion: no-preference) {
-          @keyframes ken { from { transform: scale(1.04) } to { transform: scale(1.10) } }
+          @keyframes ken { from { transform: scale(1.035) } to { transform: scale(1.095) } }
           @keyframes shine { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
         }
       `}</style>
@@ -219,32 +216,50 @@ export default function HeroPro({
         <AnimatePresence initial={false} mode="wait">
           <motion.div
             key={active}
-            className="absolute inset-0"
+            className="absolute inset-0 bg-black" /* <- black behind every frame */
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: transitionMs / 1000, ease: "easeOut" }}
             aria-hidden={false}
+            style={{ willChange: "opacity" }}
           >
-            {fit === "contain" && <div className="absolute inset-0 bg-slate-950" />}
+            {/* Base layer stays black even if image not painted yet */}
+            <div className="absolute inset-0 bg-black" />
+
+            {fit === "contain" && <div className="absolute inset-0 bg-black" />}
 
             {slides[active]?.video ? (
               <video
                 src={slides[active].video}
                 className={`h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"} object-center`}
-                autoPlay muted loop playsInline preload="auto"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                style={{ willChange: "transform", backfaceVisibility: "hidden" }}
               />
             ) : (
               <motion.img
                 src={slides[active]?.src}
                 alt={slides[active]?.alt || ""}
                 onLoad={() => loaded.current.add(active)}
-                className={`h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"} object-center ${loaded.current.has(active) ? "opacity-100" : "opacity-90 blur-[2px] scale-[1.01]"}`}
-                style={{ animation: fit === "cover" ? "ken 9.5s linear forwards" : undefined }}
+                className={`h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"} object-center`}
+                style={{
+                  animation: fit === "cover" ? "ken 9.5s linear forwards" : undefined,
+                  backgroundColor: "#000",          // <- no white backing ever
+                  willChange: "transform, opacity",
+                  transform: "translateZ(0)",
+                }}
+                loading={active === 0 ? "eager" : "lazy"}
+                fetchpriority={active === 0 ? "high" : "auto"}
+                decoding="async"
               />
             )}
 
-            <div className="absolute inset-0 bg-black/30 md:bg-black/25" />
+            {/* Tint overlay (reduced slightly to keep clarity) */}
+            <div className="absolute inset-0 bg-black/25 md:bg-black/20" />
           </motion.div>
         </AnimatePresence>
 
@@ -261,6 +276,7 @@ export default function HeroPro({
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="w-full"
+              style={{ willChange: "transform, opacity" }}
             >
               {slides[active]?.eyebrow && (
                 <div className="text-sm md:text-base tracking-wide text-white/90">

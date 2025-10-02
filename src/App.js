@@ -25,20 +25,19 @@ function ScrollToTop() {
   return null;
 }
 
-// Smooth scroll to #hash targets (works after navigation to /#about, /#properties)
+// Smooth scroll to #hash targets (works after navigation)
 function ScrollToHash() {
   const { hash, pathname } = useLocation();
   useEffect(() => {
     if (!hash) return;
-    const id = hash.replace("#", "");
-    const el = document.getElementById(id);
-    const scroll = () => el?.scrollIntoView({ behavior: "smooth", block: "start" });
-    if (el) {
-      scroll();
-    } else {
-      const t = setTimeout(scroll, 60);
-      return () => clearTimeout(t);
-    }
+    const id = hash.slice(1);
+    const tryScroll = () => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    tryScroll();
+    const t = setTimeout(tryScroll, 60);
+    return () => clearTimeout(t);
   }, [hash, pathname]);
   return null;
 }
@@ -48,23 +47,22 @@ export default function App() {
     <BrowserRouter>
       <ScrollToTop />
       <ScrollToHash />
-
       <Header />
 
       <main className="min-h-[60vh]">
         <Routes>
           <Route path="/" element={<Home />} />
 
-          {/* Explicit property pages */}
-          <Route path="/tourist-inn" element={<TouristInnGallery />} />
+          {/* ORDER MATTERS */}
           <Route path="/tour-inn" element={<TourInnGallery />} />
           <Route path="/tourist-inn-grand" element={<TouristInnGrand />} />
+          <Route path="/tourist-inn" element={<TouristInnGallery />} />
 
-          {/* Generic, slug-based gallery (still works) */}
+          {/* Generic slug (if you need it) */}
           <Route path="/property/:slug" element={<PropertyGallery />} />
 
           {/* Legal / Info */}
-          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/refunds" element={<Refunds />} />
           <Route path="/services" element={<Services />} />
 

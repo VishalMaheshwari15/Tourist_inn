@@ -1,5 +1,6 @@
-// src/components/Header.jsx (FIXED header)
+// src/components/Header.jsx — Fixed header + Mobile menu (100% working)
 import { useEffect, useId, useState } from "react";
+import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 
 const WA = (t = "Hello! I'd like to book. Please share availability & rates.") =>
@@ -10,18 +11,24 @@ export default function Header() {
   const [raised, setRaised] = useState(false);
   const menuId = useId();
 
-  // lock body scroll when mobile menu open
+  // Lock page scroll when mobile menu is open (iOS-friendly)
   useEffect(() => {
-    const prev = { overflow: document.body.style.overflow, touch: document.body.style.touchAction };
-    document.body.style.overflow = open ? "hidden" : prev.overflow;
-    document.body.style.touchAction = open ? "none" : prev.touch;
+    const html = document.documentElement;
+    const body = document.body;
+    if (open) {
+      html.classList.add("overflow-hidden");
+      body.classList.add("overflow-hidden");
+    } else {
+      html.classList.remove("overflow-hidden");
+      body.classList.remove("overflow-hidden");
+    }
     return () => {
-      document.body.style.overflow = prev.overflow;
-      document.body.style.touchAction = prev.touch;
+      html.classList.remove("overflow-hidden");
+      body.classList.remove("overflow-hidden");
     };
   }, [open]);
 
-  // elevate header on scroll
+  // Add subtle elevation on scroll
   useEffect(() => {
     const onScroll = () => setRaised(window.scrollY > 6);
     onScroll();
@@ -41,7 +48,7 @@ export default function Header() {
   const properties = [
     { name: "Tour Inn", href: "/tour-inn" },
     { name: "Tourist Inn", href: "/tourist-inn" },
-    { name: "Tourist Inn Grand", href: "/tourist-inn-grand" },
+    { name: "Tourist Inn Grand", href: "/tourist-inn-grand" }, // <-- exact route
   ];
 
   const linkBase =
@@ -53,7 +60,7 @@ export default function Header() {
       {/* FIXED header */}
       <header
         className={[
-          "fixed top-0 left-0 right-0 z-[60]",
+          "fixed top-0 left-0 right-0 z-[70]",
           "bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75",
           "border-b border-slate-200",
           raised ? "shadow-sm" : "shadow-none",
@@ -63,26 +70,42 @@ export default function Header() {
         <div className="mx-auto w-full max-w-[1180px] px-4 md:px-6">
           <div className="h-16 md:h-[76px] grid grid-cols-[auto_1fr_auto] items-center gap-3">
             {/* logo */}
-            <a href="/" aria-label="Home" className="inline-flex items-center shrink-0">
-              <img src={logo} alt="Tourist Inn" className="h-10 w-auto select-none" draggable="false" decoding="async" />
-            </a>
+            <Link to="/" aria-label="Home" className="inline-flex items-center shrink-0">
+              <img
+                src={logo}
+                alt="Tourist Inn"
+                className="h-10 w-auto select-none"
+                draggable="false"
+                decoding="async"
+              />
+            </Link>
 
             {/* center nav (desktop) */}
             <nav className="hidden md:flex justify-center items-center gap-1">
-              {nav.map((item) => (
-                <a key={item.name} href={item.href} className={`${linkBase} ${linkColor} group`}>
-                  <span className="relative">
-                    {item.name}
-                    <span className="absolute -right-2 -top-1 h-1 w-1 rounded-full bg-slate-800/70 opacity-0 group-hover:opacity-100" />
-                  </span>
-                  <span className="pointer-events-none absolute left-3 right-3 -bottom-0.5 h-[2px] origin-left bg-gradient-to-r from-slate-400 to-slate-800/80 transition-transform duration-200 ease-out group-hover:scale-x-100 scale-x-0" />
-                </a>
-              ))}
+              {nav.map((item) =>
+                item.href.startsWith("/#") ? (
+                  <a key={item.name} href={item.href} className={`${linkBase} ${linkColor} group`}>
+                    <span className="relative">
+                      {item.name}
+                      <span className="absolute -right-2 -top-1 h-1 w-1 rounded-full bg-slate-800/70 opacity-0 group-hover:opacity-100" />
+                    </span>
+                    <span className="pointer-events-none absolute left-3 right-3 -bottom-0.5 h-[2px] origin-left bg-gradient-to-r from-slate-400 to-slate-800/80 transition-transform duration-200 ease-out group-hover:scale-x-100 scale-x-0" />
+                  </a>
+                ) : (
+                  <Link key={item.name} to={item.href} className={`${linkBase} ${linkColor} group`}>
+                    <span className="relative">
+                      {item.name}
+                      <span className="absolute -right-2 -top-1 h-1 w-1 rounded-full bg-slate-800/70 opacity-0 group-hover:opacity-100" />
+                    </span>
+                    <span className="pointer-events-none absolute left-3 right-3 -bottom-0.5 h-[2px] origin-left bg-gradient-to-r from-slate-400 to-slate-800/80 transition-transform duration-200 ease-out group-hover:scale-x-100 scale-x-0" />
+                  </Link>
+                )
+              )}
             </nav>
 
             {/* right side */}
             <div className="flex items-center gap-2 justify-self-end">
-              {/* Book Now (desktop) */}
+              {/* Book Now (desktop → WhatsApp) */}
               <a
                 href={WA("Booking inquiry — dates/guests")}
                 target="_blank"
@@ -119,8 +142,18 @@ export default function Header() {
       {/* Mobile Overlay menu */}
       {open && (
         <>
-          <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
-          <div id={menuId} className="fixed inset-0 z-[90] flex flex-col md:hidden" role="dialog" aria-label="Main menu">
+          {/* dark veil */}
+          <div
+            className="fixed inset-0 z-[999] bg-black/40 backdrop-blur-[2px]"
+            onClick={() => setOpen(false)}
+          />
+          {/* panel */}
+          <div
+            id={menuId}
+            className="fixed inset-0 z-[1000] flex flex-col md:hidden"
+            role="dialog"
+            aria-label="Main menu"
+          >
             <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_-10%,rgba(14,9,25,.97),rgba(14,9,25,.94))]" />
             <div className={`absolute inset-0 opacity-[.18] bg-gradient-to-b ${brandGrad}`} />
 
@@ -160,13 +193,13 @@ export default function Header() {
                     <ul className="mt-4 space-y-2">
                       {properties.map((p) => (
                         <li key={p.name}>
-                          <a
-                            href={p.href}
+                          <Link
+                            to={p.href}
                             onClick={() => setOpen(false)}
                             className="inline-block rounded-xl px-4 py-2 text-lg text-white/90 hover:bg-white/10"
                           >
                             {p.name}
-                          </a>
+                          </Link>
                         </li>
                       ))}
                     </ul>

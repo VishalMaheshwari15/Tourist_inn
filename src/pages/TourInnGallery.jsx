@@ -149,15 +149,16 @@ function useLightbox(total, qsync) {
 }
 
 /* ---------------- button ---------------- */
-const BrandBtn = ({ href, children, className = "", variant = "primary", external = true }) => (
+const BrandBtn = ({ href, children, className = "", variant = "primary", external = true, onClick }) => (
   <a
     href={href}
     target={external ? "_blank" : undefined}
     rel={external ? "noreferrer" : undefined}
+    onClick={onClick}
     className={cx(
       "relative inline-flex items-center justify-center rounded-full font-semibold overflow-hidden ring-1 transition",
       "px-4 py-2 text-sm sm:px-5 sm:py-2.5 sm:text-base",
-      variant === "primary" ? "text-white ring-black/5" : "text-slate-900 ring-slate-300 hover:bg-slate-100",
+      variant === "primary" ? "text-white ring-black/5" : "text-slate-900 ring-slate-300 bg-white hover:bg-slate-100",
       className
     )}
   >
@@ -220,15 +221,15 @@ export default function TourInnGallery() {
   const roomCards = [
     { name: "Superior Room", copy: "Elegant interiors with queen/twin layout — perfect for short city stays.",
       ...( (() => { const i = pick("Room.jpg") || all[0]; return { img: i?.src, thumb: i?.thumb }; })() ),
-      href: WA_BOOK, icons: ["🛏️ Queen/Twin","📶 Wi-Fi","📺 Smart TV","☕ Tea/Coffee"],
+      icons: ["🛏️ Queen/Twin","📶 Wi-Fi","📺 Smart TV","☕ Tea/Coffee"],
     },
     { name: "Deluxe Room", copy: "More space, lounge seating & warm lighting for comfy longer stays.",
       ...( (() => { const i = pick("SideAngleofDeluxRoom") || pick("PersonalRoom") || all[1]; return { img: i?.src, thumb: i?.thumb }; })() ),
-      href: WA_BOOK, icons: ["🛏️ King/Queen","❄️ AC","📺 Smart TV","🔐 Safe"],
+      icons: ["🛏️ King/Queen","❄️ AC","📺 Smart TV","🔐 Safe"],
     },
     { name: "Business Deluxe", copy: "Work-friendly layout; select rooms with city views.",
       ...( (() => { const i = pick("PersonalRoomMirrorArea") || pick("PersonalRoom (2)") || all[2]; return { img: i?.src, thumb: i?.thumb }; })() ),
-      href: WA_BOOK, icons: ["🧑‍💻 Desk","📶 Fast Wi-Fi","☕ Coffee/Tea","🛁 Ensuite"],
+      icons: ["🧑‍💻 Desk","📶 Fast Wi-Fi","☕ Coffee/Tea","🛁 Ensuite"],
     },
   ];
 
@@ -261,14 +262,37 @@ export default function TourInnGallery() {
             Quiet stays • modern amenities • city convenience. Explore rooms, gallery & location.
           </p>
           <div className="mt-6 flex flex-wrap gap-2 sm:gap-3">
-            <BrandBtn href={WA_BOOK}>Book on WhatsApp</BrandBtn>
+            {/* Keep WhatsApp on banner */}
+            <BrandBtn href={WA_BOOK} variant="primary">Book on WhatsApp</BrandBtn>
+
+            {/* View Gallery — white */}
             <a
               href="#gallery"
               onClick={(e) => { e.preventDefault(); goto("gallery"); }}
-              className="relative inline-flex items-center justify-center rounded-full px-4 py-2 text-sm sm:px-5 sm:py-2.5 sm:text-base font-semibold text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100"
+              className="relative inline-flex items-center justify-center rounded-full px-4 py-2 text-sm sm:px-5 sm:py-2.5 sm:text-base font-semibold text-slate-900 ring-1 ring-slate-300 bg-white hover:bg-slate-100"
             >
               View Gallery
             </a>
+
+            {/* Share — white */}
+            <BrandBtn
+              href={typeof window !== "undefined" ? window.location.href : "#"}
+              variant="default"
+              external={false}
+              onClick={(e) => {
+                e.preventDefault();
+                const url = window.location.href;
+                if (navigator.share) {
+                  navigator.share({ title: "Tour Inn", url }).catch(() => {});
+                } else {
+                  navigator.clipboard?.writeText(url);
+                  alert("Link copied!");
+                }
+              }}
+              className="bg-white"
+            >
+              Share
+            </BrandBtn>
           </div>
         </div>
         <div className="h-px w-full bg-gradient-to-r from-[#6A00FF] via-[#B86DFF] to-[#FF2EA8]/90 opacity-60" />
@@ -333,14 +357,14 @@ export default function TourInnGallery() {
                   <div className="mt-3 sm:mt-4 flex flex-wrap gap-2.5 sm:gap-3 text-slate-600 text-[13px] sm:text-sm">
                     {r.icons.map((t, j) => <span key={j} className="inline-flex items-center">{t}</span>)}
                   </div>
-                  <div className="mt-4 sm:mt-5 flex items-center justify-between gap-2">
+                  {/* WhatsApp removed from room cards — only View Photos */}
+                  <div className="mt-4 sm:mt-5">
                     <button
                       onClick={() => openAt(Math.min(i, Math.max(0, all.length-1)))}
-                      className="rounded-full px-3.5 py-2 text-[13px] sm:px-4 sm:py-2.5 sm:text-sm font-semibold text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100"
+                      className="rounded-full px-3.5 py-2 text-[13px] sm:px-4 sm:py-2.5 sm:text-sm font-semibold text-slate-900 ring-1 ring-slate-300 bg-white hover:bg-slate-100"
                     >
                       View Photos
                     </button>
-                    <BrandBtn href={r.href} className="whitespace-nowrap">WhatsApp</BrandBtn>
                   </div>
                 </div>
               </article>
@@ -363,14 +387,13 @@ export default function TourInnGallery() {
                   <h3 className="text-lg sm:text-xl font-semibold text-slate-900">Family / Long Stay</h3>
                   <p className="mt-2 text-sm sm:text-base text-slate-600">Spacious layouts for families & extended stays with refined amenities.</p>
                   <div className="mt-3 sm:mt-4 text-slate-600 text-[13px] sm:text-sm">🛏️ Up to 4 • 📶 Fast Wi-Fi • ☕ Coffee/Tea • ❄️ AC • 🛁 Ensuite</div>
-                  <div className="mt-3 sm:mt-auto pt-3 sm:pt-4 flex items-center gap-2 sm:gap-3">
+                  <div className="mt-3 sm:mt-auto pt-3 sm:pt-4">
                     <button
                       onClick={() => openAt(3)}
-                      className="rounded-full px-3.5 py-2 text-[13px] sm:px-4 sm:py-2.5 sm:text-sm font-semibold text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100"
+                      className="rounded-full px-3.5 py-2 text-[13px] sm:px-4 sm:py-2.5 sm:text-sm font-semibold text-slate-900 ring-1 ring-slate-300 bg-white hover:bg-slate-100"
                     >
                       View Photos
                     </button>
-                    <BrandBtn href={WA_BOOK}>WhatsApp</BrandBtn>
                   </div>
                 </div>
               </div>
