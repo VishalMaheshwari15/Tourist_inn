@@ -1,4 +1,4 @@
-// src/components/PropertiesGrid.jsx — Business/Diplomatic Grid + WhatsApp CTAs
+// src/components/PropertiesGrid.jsx — Inclusive Grid, WA per-card only (no global WA bar)
 import { Link } from "react-router-dom";
 import imgTourInn from "../assets/TourInn.png";
 import imgTouristInn from "../assets/TouristInn.jpg";
@@ -11,15 +11,15 @@ const wa = (t) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t)}`;
 const cards = [
   {
     name: "Tour Inn",
-    desc: "Business-friendly rooms in central Malé — efficient, quiet, professional.",
+    desc: "Quiet, efficient rooms in central Malé — clean, comfortable and well-connected.",
     href: "/tour-inn",
     img: imgTourInn,
-    chips: ["City-centre", "Invoice support", "Fast Wi-Fi"],
+    chips: ["City-centre", "Flexible billing", "Fast Wi-Fi"],
     waText: "Booking inquiry — Tour Inn (dates/guests):",
   },
   {
     name: "Tourist Inn",
-    desc: "Clean, calm and well-connected. Perfect for short official trips.",
+    desc: "Calm, tidy spaces with easy access to ferries, markets and offices — great for short stays.",
     href: "/tourist-inn",
     img: imgTouristInn,
     chips: ["Secure entry", "Daily housekeeping", "Smart TV"],
@@ -27,7 +27,7 @@ const cards = [
   },
   {
     name: "Tourist Inn Grand",
-    desc: "Spacious layouts & work desks — ideal for VIP and diplomatic stays.",
+    desc: "More space and work desks — ideal for longer stays, families and teams.",
     href: "/tourist-inn-grand",
     img: imgGrand,
     chips: ["Work desk", "Concierge on WA", "Airport transfer"],
@@ -46,10 +46,10 @@ export default function PropertiesGrid() {
         <header className="text-center mb-10 md:mb-14">
           <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[12px] uppercase tracking-[0.18em] text-slate-700">
             <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${BRAND}`} />
-            City Portfolio — Business & Diplomatic Travel
+            City Portfolio — Stays in Central Malé
           </div>
           <h2 className="mt-3 text-3xl md:text-4xl font-semibold text-slate-900">
-            Three professional guesthouses in Malé
+            Three comfortable guesthouses in Malé
           </h2>
           <p className="mt-2 text-slate-600">
             Central addresses with reliable service, secure entry and 24×7 WhatsApp concierge.
@@ -58,14 +58,13 @@ export default function PropertiesGrid() {
 
         {/* responsive advanced layout: 12-col grid; equal priority */}
         <div className="grid grid-cols-1 sm:grid-cols-6 lg:grid-cols-12 gap-5 md:gap-6">
-          {cards.map((c, idx) => (
+          {cards.map((c) => (
             <article
               key={c.name}
               className={[
-                // equal emphasis but varied spans for visual interest (changes by breakpoint)
                 "relative group overflow-hidden rounded-3xl ring-1 ring-slate-200 bg-white shadow-[0_10px_36px_rgba(15,23,42,.08)] hover:shadow-[0_16px_60px_rgba(15,23,42,.14)] transition",
-                "sm:col-span-6", // full width on small
-                "lg:col-span-4", // 3-up on large
+                "sm:col-span-6",
+                "lg:col-span-4",
               ].join(" ")}
             >
               {/* image */}
@@ -77,7 +76,6 @@ export default function PropertiesGrid() {
                   loading="lazy"
                   decoding="async"
                 />
-                {/* top gradient + subtle brand stroke */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/0 to-transparent" />
                 <span className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-black/10" />
                 <span className="pointer-events-none absolute -top-10 -left-10 h-40 w-40 rounded-full bg-gradient-to-br from-[#6A00FF]/20 to-[#FF2EA8]/20 blur-2xl" />
@@ -102,6 +100,7 @@ export default function PropertiesGrid() {
 
                 {/* CTAs */}
                 <div className="mt-5 flex flex-wrap items-center gap-3">
+                  {/* WhatsApp first */}
                   <a
                     href={wa(c.waText)}
                     target="_blank"
@@ -109,7 +108,7 @@ export default function PropertiesGrid() {
                     className="relative inline-flex items-center justify-center rounded-full px-5 py-2.5 font-semibold text-white overflow-hidden ring-1 ring-black/5"
                   >
                     <span className={`absolute inset-0 bg-gradient-to-r ${BRAND}`} />
-                    <span className="relative">WhatsApp to Book</span>
+                    <span className="relative">Chat on WhatsApp</span>
                   </a>
                   <Link
                     to={c.href}
@@ -120,12 +119,7 @@ export default function PropertiesGrid() {
                 </div>
               </div>
 
-              {/* corner badge */}
-              <div className="pointer-events-none absolute left-4 top-4">
-                <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium ring-1 ring-slate-200">
-                  🛡️ Embassy-friendly
-                </span>
-              </div>
+              {/* removed: “Embassy-friendly” badge */}
             </article>
           ))}
         </div>
@@ -133,9 +127,7 @@ export default function PropertiesGrid() {
         {/* KPI strip */}
         <div className="mt-8 grid grid-cols-3 gap-3">
           <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center shadow-sm">
-            <div className={`bg-clip-text text-transparent bg-gradient-to-r ${BRAND} text-2xl font-semibold`}>
-              3
-            </div>
+            <div className={`bg-clip-text text-transparent bg-gradient-to-r ${BRAND} text-2xl font-semibold`}>3</div>
             <p className="text-[11px] text-slate-600">Properties</p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center shadow-sm">
@@ -148,18 +140,7 @@ export default function PropertiesGrid() {
           </div>
         </div>
 
-        {/* global WA concierge bar */}
-        <div className="mt-8 flex justify-center">
-          <a
-            href={wa("Hello, please assist with dates, rates and airport pickup.")}
-            target="_blank"
-            rel="noreferrer"
-            className="relative inline-flex items-center justify-center rounded-full px-5 py-2.5 font-semibold text-white overflow-hidden ring-1 ring-black/5"
-          >
-            <span className={`absolute inset-0 bg-gradient-to-r ${BRAND}`} />
-            <span className="relative">Message Concierge on WhatsApp</span>
-          </a>
-        </div>
+        {/* removed: global WA concierge bar */}
       </div>
     </section>
   );
