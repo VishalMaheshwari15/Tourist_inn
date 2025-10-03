@@ -1,29 +1,26 @@
-// src/components/PropertiesGrid.jsx — Inclusive Grid, WA per-card only (no global WA bar)
+// src/components/PropertiesGrid.jsx — Inclusive Grid, no WhatsApp CTA (ORDER ENFORCED)
 import { Link } from "react-router-dom";
 import imgTourInn from "../assets/TourInn.png";
 import imgTouristInn from "../assets/TouristInn.jpg";
 import imgGrand from "../assets/TouristInnGrand.png";
 
 const BRAND = "from-[#6A00FF] via-[#B86DFF] to-[#FF2EA8]";
-const WA_NUMBER = "9607860882";
-const wa = (t) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t)}`;
 
+/* ORDER: Tourist Inn → Tour Inn → Tourist Inn Grand */
 const cards = [
-  {
-    name: "Tour Inn",
-    desc: "Quiet, efficient rooms in central Malé — clean, comfortable and well-connected.",
-    href: "/tour-inn",
-    img: imgTourInn,
-    chips: ["City-centre", "Flexible billing", "Fast Wi-Fi"],
-    waText: "Booking inquiry — Tour Inn (dates/guests):",
-  },
   {
     name: "Tourist Inn",
     desc: "Calm, tidy spaces with easy access to ferries, markets and offices — great for short stays.",
     href: "/tourist-inn",
     img: imgTouristInn,
     chips: ["Secure entry", "Daily housekeeping", "Smart TV"],
-    waText: "Booking inquiry — Tourist Inn (dates/guests):",
+  },
+  {
+    name: "Tour Inn",
+    desc: "Quiet, efficient rooms in central Malé — clean, comfortable and well-connected.",
+    href: "/tour-inn",
+    img: imgTourInn,
+    chips: ["City-centre", "Flexible billing", "Fast Wi-Fi"],
   },
   {
     name: "Tourist Inn Grand",
@@ -31,7 +28,6 @@ const cards = [
     href: "/tourist-inn-grand",
     img: imgGrand,
     chips: ["Work desk", "Concierge on WA", "Airport transfer"],
-    waText: "Booking inquiry — Tourist Inn Grand (dates/guests):",
   },
 ];
 
@@ -98,18 +94,8 @@ export default function PropertiesGrid() {
                   ))}
                 </div>
 
-                {/* CTAs */}
-                <div className="mt-5 flex flex-wrap items-center gap-3">
-                  {/* WhatsApp first */}
-                  <a
-                    href={wa(c.waText)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="relative inline-flex items-center justify-center rounded-full px-5 py-2.5 font-semibold text-white overflow-hidden ring-1 ring-black/5"
-                  >
-                    <span className={`absolute inset-0 bg-gradient-to-r ${BRAND}`} />
-                    <span className="relative">Chat on WhatsApp</span>
-                  </a>
+                {/* CTAs (WhatsApp removed) */}
+                <div className="mt-5">
                   <Link
                     to={c.href}
                     className="inline-flex items-center rounded-full px-5 py-2.5 ring-1 ring-slate-300 text-slate-800 hover:bg-slate-50"
@@ -118,8 +104,6 @@ export default function PropertiesGrid() {
                   </Link>
                 </div>
               </div>
-
-              {/* removed: “Embassy-friendly” badge */}
             </article>
           ))}
         </div>
@@ -139,8 +123,6 @@ export default function PropertiesGrid() {
             <p className="text-[11px] text-slate-600">WhatsApp Concierge</p>
           </div>
         </div>
-
-        {/* removed: global WA concierge bar */}
       </div>
     </section>
   );

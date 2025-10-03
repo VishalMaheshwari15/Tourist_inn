@@ -1,4 +1,4 @@
-// src/components/Footer.jsx — ultra clean footer + Developer credit + Language pill + SOCIAL LINKS
+// src/components/Footer.jsx — ultra clean footer (Developer credit removed)
 import { useRef, useState } from "react";
 import logo from "../assets/logo.png";
 import {
@@ -15,7 +15,6 @@ const WA = (t = "Hello! I'd like to book. Please share availability & rates.") =
 /* Social links (edit if you add more) */
 const SOCIAL = [
   { name: "Facebook", href: "https://www.facebook.com/touristinnmv", icon: Facebook,  className: "text-[#1877F2]" },
-  // TODO: replace with your real Instagram handle if different:
   { name: "Instagram", href: "https://www.instagram.com/touristinnmv", icon: Instagram, className: "text-[#E4405F]" },
   { name: "WhatsApp", href: WA("Hi! I found you via your website."), icon: MessageCircle, className: "text-[#25D366]" },
 ];
@@ -163,8 +162,9 @@ export default function Footer() {
 
               <h4 className="mt-6 text-sm font-semibold text-slate-900">Properties</h4>
               <ul className="mt-3 space-y-2 text-sm">
-                <li><a href="/tour-inn" className="text-slate-600 hover:text-slate-900 hover:underline">Tour Inn</a></li>
+                {/* Keep order consistent */}
                 <li><a href="/tourist-inn" className="text-slate-600 hover:text-slate-900 hover:underline">Tourist Inn</a></li>
+                <li><a href="/tour-inn" className="text-slate-600 hover:text-slate-900 hover:underline">Tour Inn</a></li>
                 <li><a href="/tourist-inn-grand" className="text-slate-600 hover:text-slate-900 hover:underline">Tourist Inn Grand</a></li>
               </ul>
             </div>
@@ -190,23 +190,10 @@ export default function Footer() {
         {/* Divider */}
         <div className="border-t border-slate-200" />
 
-        {/* Bottom bar with developer credit + language pill */}
+        {/* Bottom bar (Developer credit removed) */}
         <div className="py-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <span>© {new Date().getFullYear()} All rights reserved.</span>
-            <span className="hidden sm:inline h-1 w-1 rounded-full bg-slate-300" />
-            <span>
-              Developed by{" "}
-              <a
-                href="https://monkeyytech.com"
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-slate-700 hover:underline"
-                aria-label="MonkeyyTech (opens in a new tab)"
-              >
-                MonkeyyTech
-              </a>
-            </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">

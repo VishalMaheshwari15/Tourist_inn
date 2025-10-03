@@ -1,11 +1,11 @@
-// src/components/HeroPro.jsx — Ultra Premier Slider (no white flash on scroll/transition)
+// src/components/HeroPro.jsx — Ultra Premier Slider (single CTA only)
+// Book/WhatsApp CTAs are auto-removed. Order is controlled by the slides you pass in.
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-const WA = (t = "Hello Tourist Inn Grand, I'd like to book. Please share availability & rates.") =>
-  `https://wa.me/9607860882?text=${encodeURIComponent(t)}`;
 
 /* SmartLink */
 function SmartLink({ href, className = "", children, ...rest }) {
@@ -51,18 +51,31 @@ function SmartLink({ href, className = "", children, ...rest }) {
   );
 }
 
+/* Remove any Book/WA CTAs regardless of what slides pass */
+function sanitizeCTAs(ctaList = []) {
+  const BAD = /(book\s*now?|reserve|whats\s*app|whatsapp|wa\.me)/i;
+  return ctaList.filter(
+    (c) =>
+      c &&
+      typeof c.label === "string" &&
+      !BAD.test(c.label) &&
+      (typeof c.href !== "string" || !BAD.test(c.href))
+  );
+}
+
 /**
  * Props
- * - slides: Array<{ src?: string, video?: string, alt?: string, eyebrow?: string, title?: string, subtitle?: string,
- *                   cta1?: {label, href, variant?}, cta2?: {label, href, variant?}, cta3?: {label, href, variant?} }>
+ * - slides: Array<{ src?, video?, alt?, eyebrow?, title?, subtitle?,
+ *                   cta1?, cta2?, cta3?, clickHref? }>
  * - height: Tailwind class (default: h-[92vh])
  * - fit: 'cover' | 'contain' (default: 'cover')
  * - autoPlay: boolean (default: true)
  * - duration: number ms per slide (default: 6000)
  * - transitionMs: number crossfade (default: 900)
  * - showDots/arrows/progress: booleans
- * - bannerHref: string | null (default: "/tourist-inn-grand")
+ * - bannerHref: string | null (default: null)
  * - ignoreReducedMotion: boolean (default: true)
+ * - singleCTA: {label, href, target?, rel?} | null  // optional global override for the one button
  */
 export default function HeroPro({
   slides: extSlides,
@@ -74,8 +87,9 @@ export default function HeroPro({
   showDots = true,
   showArrows = true,
   showProgress = true,
-  bannerHref = "/tourist-inn-grand",
+  bannerHref = null,
   ignoreReducedMotion = true,
+  singleCTA = null, // <— NEW
 }) {
   const slides = useMemo(() => extSlides || [], [extSlides]);
   const [i, setI] = useState(0);
@@ -92,7 +106,7 @@ export default function HeroPro({
   const prev = () => setI((v) => (v - 1 + slides.length) % slides.length);
   const go = (idx) => setI(clamp(idx, 0, slides.length - 1));
 
-  // --- AUTOPLAY (robust)
+  // AUTOPLAY
   useEffect(() => {
     const reduceBlock = prefersReduced && !ignoreReducedMotion;
     const shouldRun =
@@ -167,31 +181,32 @@ export default function HeroPro({
   const nextIdx = (active + 1) % slides.length;
   const preloadSrc = slides[nextIdx]?.src;
 
-  // Whole banner click -> route
+  // Whole banner click -> route (per-slide overrides global)
   const onBannerClick = (e) => {
-    if (!bannerHref) return;
+    const s = slides[active];
+    const clickHref = s?.clickHref ?? bannerHref;
+    if (!clickHref) return;
     if (e.target.closest("[data-stop-banner],a,button,[role='button']")) return;
-    if (bannerHref.startsWith("/")) navigate(bannerHref);
-    else window.location.href = bannerHref;
+    if (clickHref.startsWith("/")) navigate(clickHref);
+    else window.location.href = clickHref;
   };
 
-  const defaultCTAs = [
-    {
-      label: "Book Now",
-      href: WA("Booking — Tourist Inn Grand (dates/guests):"),
-      variant: "primary",
-      target: "_blank",
-      rel: "noreferrer",
-    },
-    { label: "Explore Rooms", href: "#rooms", variant: "ghost" },
-    { label: "View Gallery", href: "#gallery", variant: "ghost" },
-  ];
-  const slideCTAs = [slides[active]?.cta1, slides[active]?.cta2, slides[active]?.cta3].filter(Boolean);
-  const ctas = slideCTAs.length ? slideCTAs : defaultCTAs;
+  // Collect sanitized CTAs and keep ONLY ONE
+  const slideCTAs = sanitizeCTAs(
+    [slides[active]?.cta1, slides[active]?.cta2, slides[active]?.cta3].filter(Boolean)
+  );
+
+  // 1) global override if provided; else 2) first sanitized slide CTA; else 3) fallback
+  const chosenCTA =
+    singleCTA ??
+    slideCTAs[0] ?? {
+      label: "Explore Rooms",
+      href: "#rooms",
+    };
 
   return (
     <section
-      className="relative isolate overflow-hidden w-screen cursor-pointer bg-black" // <- hard black base
+      className="relative isolate overflow-hidden w-screen cursor-pointer bg-black"
       onClick={onBannerClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -207,7 +222,6 @@ export default function HeroPro({
       <style>{`
         @media (prefers-reduced-motion: no-preference) {
           @keyframes ken { from { transform: scale(1.035) } to { transform: scale(1.095) } }
-          @keyframes shine { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
         }
       `}</style>
 
@@ -216,7 +230,7 @@ export default function HeroPro({
         <AnimatePresence initial={false} mode="wait">
           <motion.div
             key={active}
-            className="absolute inset-0 bg-black" /* <- black behind every frame */
+            className="absolute inset-0 bg-black"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -248,7 +262,7 @@ export default function HeroPro({
                 className={`h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"} object-center`}
                 style={{
                   animation: fit === "cover" ? "ken 9.5s linear forwards" : undefined,
-                  backgroundColor: "#000",          // <- no white backing ever
+                  backgroundColor: "#000",
                   willChange: "transform, opacity",
                   transform: "translateZ(0)",
                 }}
@@ -258,7 +272,7 @@ export default function HeroPro({
               />
             )}
 
-            {/* Tint overlay (reduced slightly to keep clarity) */}
+            {/* Tint overlay */}
             <div className="absolute inset-0 bg-black/25 md:bg-black/20" />
           </motion.div>
         </AnimatePresence>
@@ -266,7 +280,7 @@ export default function HeroPro({
         {/* Preload next */}
         {preloadSrc && <link rel="preload" as="image" href={preloadSrc} />}
 
-        {/* Overlay content (controls marked) */}
+        {/* Overlay content */}
         <div className="relative z-10 h-full" data-stop-banner>
           <div className="mx-auto flex h-full max-w-[1180px] flex-col items-center justify-center px-4 text-center text-white md:px-6">
             <motion.div
@@ -294,32 +308,16 @@ export default function HeroPro({
                 </p>
               )}
 
-              {/* CTA row */}
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                {ctas.map((c, idx) => {
-                  const primary = c.variant === "primary";
-                  return (
-                    <SmartLink
-                      key={idx}
-                      href={c.href}
-                      target={c.target}
-                      rel={c.rel}
-                      className={
-                        primary
-                          ? "relative inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-base font-semibold text-slate-900 shadow-sm ring-1 ring-white/60 transition hover:bg-white/95 overflow-hidden"
-                          : "relative inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-semibold text-white ring-1 ring-white/70 backdrop-blur hover:bg-white/10 transition"
-                      }
-                    >
-                      {c.label}
-                      {primary && (
-                        <span
-                          className="pointer-events-none absolute inset-y-0 -left-1 w-1/3 translate-x-[-120%] bg-white/40"
-                          style={{ animation: "shine 1.8s ease-in-out infinite" }}
-                        />
-                      )}
-                    </SmartLink>
-                  );
-                })}
+              {/* SINGLE CTA ONLY */}
+              <div className="mt-8 flex items-center justify-center">
+                <SmartLink
+                  href={chosenCTA.href}
+                  target={chosenCTA.target}
+                  rel={chosenCTA.rel}
+                  className="relative inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-semibold text-white ring-1 ring-white/70 backdrop-blur hover:bg-white/10 transition"
+                >
+                  {chosenCTA.label}
+                </SmartLink>
               </div>
 
               {/* progress bars */}

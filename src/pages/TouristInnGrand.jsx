@@ -1,15 +1,10 @@
 // src/pages/TouristInnGrand.jsx — Tourist Inn GRAND (Responsive Pro)
 // HERO uses src/assets/TouristInnGrand.png (static import)
-// All extra WhatsApp / booking.com CTAs removed; only banner "Book Now" -> WhatsApp
+// No booking CTA on the banner per request — added Share button
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import heroImg from "../assets/TouristInnGrand.png"; // <- EXACT PATH (A capital)
-
-/* ---------------- config ---------------- */
-const WA_NUMBER = "9607860882";
-const waLink = (t = "Hello Tourist Inn Grand, I'd like to book. Please share availability & rates.") =>
-  `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t)}`;
 
 /* ---------------- filename helpers ---------------- */
 const NEG = /(bath|toilet|wc|wash|sink|shower)/i;
@@ -156,7 +151,7 @@ export default function TouristInnGrand() {
 
   return (
     <div className="min-h-screen bg-[rgb(252,249,253)] text-slate-800 [scrollbar-gutter:stable_both-edges]">
-      {/* HERO — single WhatsApp CTA; mobile-safe paddings */}
+      {/* HERO — no booking CTA; mobile-safe paddings */}
       <section className="relative isolate overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-slate-900" />
         <img
@@ -175,22 +170,30 @@ export default function TouristInnGrand() {
             Comfort in Central Malé
           </h1>
           <p className="mt-3 sm:mt-4 max-w-[44ch] text-white/90 text-sm sm:text-base">
-            Quiet rooms • modern amenities • instant WhatsApp booking.
+            Quiet rooms • modern amenities • instant gallery below.
           </p>
           <div className="mt-5 sm:mt-6 flex flex-wrap gap-3">
-            <a
-              href={waLink("Booking — Tourist Inn Grand (dates/guests):")}
-              target="_blank" rel="noreferrer"
-              className="relative inline-flex items-center justify-center rounded-full px-4 sm:px-5 py-2.5 font-semibold overflow-hidden ring-1 ring-black/5 text-white"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-[#6A00FF] via-[#B86DFF] to-[#FF2EA8]" />
-              <span className="relative">Book Now (WhatsApp)</span>
-            </a>
+            {/* Removed Book Now button */}
             <button
               onClick={() => goto("gallery")}
               className="inline-flex items-center justify-center rounded-full px-4 sm:px-5 py-2.5 font-semibold text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100 bg-white/95"
             >
               View Gallery
+            </button>
+            {/* Share — added */}
+            <button
+              onClick={() => {
+                const url = window.location.href;
+                if (navigator.share) {
+                  navigator.share({ title: "Tourist Inn Grand", url }).catch(() => {});
+                } else {
+                  navigator.clipboard?.writeText(url);
+                  alert("Link copied!");
+                }
+              }}
+              className="inline-flex items-center justify-center rounded-full px-4 sm:px-5 py-2.5 font-semibold text-slate-900 ring-1 ring-slate-300 bg-white/95 hover:bg-slate-100"
+            >
+              Share
             </button>
           </div>
         </div>

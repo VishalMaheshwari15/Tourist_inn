@@ -13,12 +13,15 @@ const importAll = (ctx) =>
   }) || [];
 const cx = (...xs) => xs.filter(Boolean).join(" ");
 
+/* ------------ explicit Room 3 image ------------ */
+import room3Img from "../assets/TouristInn/Room3image.png";
+
 /* ------------ images ------------ */
 const GALLERY_CTX = safeCtx(() =>
   require.context("../assets/TouristInn", false, /\.(png|jpe?g|webp)$/i)
 );
 
-function useImages() {
+function useBaseImages() {
   return useMemo(() => {
     const list = importAll(GALLERY_CTX);
     return list.sort((a, b) =>
@@ -31,7 +34,25 @@ function useImages() {
 export default function TouristInnGallery() {
   useEffect(() => { document.title = "Tourist Inn — Malé"; }, []);
 
-  const images = useImages();
+  // Take scanned images, then ensure Room3image.png is present and is the LAST image.
+  const baseImages = useBaseImages();
+  const images = useMemo(() => {
+    let arr = [...baseImages];
+
+    // If the explicit Room3 image isn't in the scanned list, add it
+    const hasRoom3 = arr.some((x) => x.src === room3Img || /Room3image\.png$/i.test(x.key));
+    if (!hasRoom3) {
+      arr.push({ key: "Room3image.png", src: room3Img });
+    }
+
+    // Move Room3image.png to the end (ensure it's last)
+    arr = [
+      ...arr.filter((x) => !(x.src === room3Img || /Room3image\.png$/i.test(x.key))),
+      { key: "Room3image.png", src: room3Img },
+    ];
+    return arr;
+  }, [baseImages]);
+
   const hero = images[0]?.src;
 
   // lightbox
@@ -84,18 +105,29 @@ export default function TouristInnGallery() {
             Quiet, clean & central — explore rooms and the full gallery.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
-            <a
-              href="/booking?hotel=tourist-inn"
-              className="relative inline-flex items-center justify-center rounded-full px-5 py-2.5 font-semibold overflow-hidden ring-1 ring-black/5 text-white"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-[#6A00FF] via-[#B86DFF] to-[#FF2EA8]" />
-              <span className="relative">Book Now</span>
-            </a>
+            {/* BOOK NOW REMOVED */}
             <button
               onClick={() => goto("gallery")}
               className="inline-flex items-center justify-center rounded-full px-5 py-2.5 font-semibold text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100 bg-white"
             >
               View Gallery
+            </button>
+
+            {/* SHARE — added */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                const url = window.location.href;
+                if (navigator.share) {
+                  navigator.share({ title: "Tourist Inn", url }).catch(() => {});
+                } else {
+                  navigator.clipboard?.writeText(url);
+                  alert("Link copied!");
+                }
+              }}
+              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 font-semibold text-slate-900 ring-1 ring-slate-300 bg-white hover:bg-slate-100"
+            >
+              Share
             </button>
           </div>
         </div>
@@ -106,7 +138,7 @@ export default function TouristInnGallery() {
       {/* STICKY SUBNAV */}
       <div className="sticky top-[64px] z-40 bg-white/80 backdrop-blur ring-1 ring-slate-200">
         <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-          <nav className="flex gap-1">
+          <nav className="flex gap-1 overflow-x-auto no-scrollbar">
             {[
               { id: "rooms", label: "Rooms" },
               { id: "gallery", label: "Gallery" },
@@ -118,7 +150,7 @@ export default function TouristInnGallery() {
                 key={t.id}
                 onClick={() => goto(t.id)}
                 className={cx(
-                  "relative px-4 py-3 text-sm font-semibold rounded-md transition",
+                  "relative px-4 py-3 text-sm font-semibold rounded-md transition whitespace-nowrap",
                   active === t.id ? "text-slate-900" : "text-slate-600 hover:text-slate-800"
                 )}
               >
@@ -144,40 +176,53 @@ export default function TouristInnGallery() {
           </header>
 
           <div className="grid gap-8 md:gap-10 md:grid-cols-2">
-            {[0,1,2].map((i) => (
-              <article key={i} className="overflow-hidden rounded-3xl ring-1 ring-slate-200 bg-white shadow-sm">
-                <div className="relative aspect-[16/10] w-full bg-slate-100">
-                  {images[i]?.src ? (
-                    <img
-                      src={images[i].src}
-                      alt={`Room ${i+1}`}
-                      className="h-full w-full object-cover"
-                      loading={i<2?"eager":"lazy"}
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-slate-100 to-slate-200" />
-                  )}
-                </div>
-                <div className="p-5 md:p-6">
-                  <h3 className="text-xl font-semibold text-slate-900">Room {i+1}</h3>
-                  <p className="mt-2 text-slate-600">Comfortable room with modern amenities.</p>
-                  <div className="mt-5 flex items-center gap-3">
-                    <button
-                      onClick={() => openAt(Math.min(i, Math.max(0, images.length - 1)))}
-                      className="rounded-full px-4 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100"
-                    >
-                      View Photos
-                    </button>
-                    <a
-                      href={`/booking?hotel=tourist-inn&room=${i+1}`}
-                      className="rounded-full px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800"
-                    >
-                      View &amp; Book
-                    </a>
+            {[0,1,2].map((i) => {
+              // Force Room 3 image
+              const forcedRoom3 = i === 2 ? room3Img : null;
+              const displaySrc = forcedRoom3 || images[i]?.src || null;
+
+              return (
+                <article key={i} className="overflow-hidden rounded-3xl ring-1 ring-slate-200 bg-white shadow-sm">
+                  <div className="relative aspect-[16/10] w-full bg-slate-100">
+                    {displaySrc ? (
+                      <img
+                        src={displaySrc}
+                        alt={`Room ${i+1}`}
+                        className="h-full w-full object-cover"
+                        loading={i<2?"eager":"lazy"}
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-slate-100 to-slate-200" />
+                    )}
                   </div>
-                </div>
-              </article>
-            ))}
+                  <div className="p-5 md:p-6">
+                    <h3 className="text-xl font-semibold text-slate-900">Room {i+1}</h3>
+                    <p className="mt-2 text-slate-600">Comfortable room with modern amenities.</p>
+                    <div className="mt-5 flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={() =>
+                          openAt(
+                            // open the forced Room3 slide if i===2, which is the LAST image (we ensured)
+                            i === 2 ? images.length - 1 : Math.min(i, Math.max(0, images.length - 1))
+                          )
+                        }
+                        className="rounded-full px-4 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100"
+                      >
+                        View Photos
+                      </button>
+                      {/* info-only wording */}
+                      <a
+                        href={`/booking?hotel=tourist-inn&room=${i+1}`}
+                        className="rounded-full px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800"
+                      >
+                        View Details
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -193,13 +238,13 @@ export default function TouristInnGallery() {
 
           {images.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-              Add JPG/PNG/WEBP to <code>src/assets/TouristInn</code> to see the gallery.
+              Add JPG/PNG/WEBP to <code>src>assets>TouristInn</code> to see the gallery.
             </div>
           ) : (
             <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 [column-fill:_balance]">
               {images.map((img, i) => (
                 <button
-                  key={img.key}
+                  key={`${img.key}-${i}`}
                   onClick={() => openAt(i)}
                   className="group mb-4 block w-full overflow-hidden rounded-2xl ring-1 ring-slate-200 bg-white shadow-sm hover:shadow-md transition break-inside-avoid"
                 >
@@ -256,8 +301,7 @@ export default function TouristInnGallery() {
             <div className="overflow-hidden rounded-3xl ring-1 ring-slate-200 bg-white">
               <iframe
                 title="Map"
-                // Exact search for the address
-                src="https://www.google.com/maps?q=Ma.+Leaves,+Maaveyo+Goalhi,+Mal%C3%A9,+Maldives&output=embed"
+                src="https://www.google.com/maps?q=Ma.+Leaves,+Maaveyo+Goalhi,+Malé,+Maldives&output=embed"
                 className="w-full h-[260px] sm:h-[320px] md:h-[360px]"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -269,12 +313,7 @@ export default function TouristInnGallery() {
                 Ma. Leaves, Maaveyo Goalhi, Malé, Maldives
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
-                <a
-                  href="/booking?hotel=tourist-inn"
-                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800"
-                >
-                  Book Now
-                </a>
+                {/* BOOK NOW REMOVED */}
                 <a
                   href="tel:+9607860882"
                   className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold ring-1 ring-slate-300 hover:bg-slate-100"
@@ -291,6 +330,22 @@ export default function TouristInnGallery() {
                   className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold ring-1 ring-slate-300 hover:bg-slate-100"
                 >
                   Copy Address
+                </button>
+                {/* Explore Properties REMOVED */}
+                {/* Share button here too (optional) */}
+                <button
+                  onClick={() => {
+                    const url = window.location.href + "#location";
+                    if (navigator.share) {
+                      navigator.share({ title: "Tourist Inn — Location", url }).catch(() => {});
+                    } else {
+                      navigator.clipboard?.writeText(url);
+                      alert("Link copied!");
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold ring-1 ring-slate-300 hover:bg-slate-100"
+                >
+                  Share
                 </button>
               </div>
             </div>

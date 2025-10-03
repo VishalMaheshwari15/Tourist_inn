@@ -1,4 +1,4 @@
-// src/pages/TourInnGallery.jsx — RESPONSIVE ULTRA build (mobile → 4K), smooth & stable
+// src/pages/TourInnGallery.jsx — RESPONSIVE ULTRA (clean photos, no banner booking CTA)
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -60,47 +60,17 @@ function useImages() {
   }, []);
 }
 
-/* ---------------- blur-up image ---------------- */
-function SmoothImg({ src, alt = "", thumb, className = "", imgClass = "" }) {
-  const [loaded, setLoaded] = useState(false);
+/* ---------------- SUPER clean image (no blur/skeleton overlay) ---------------- */
+function SmoothImg({ src, alt = "", className = "", imgClass = "" }) {
   return (
     <div className={cx("relative overflow-hidden", className)}>
-      {/* skeleton */}
-      <div
-        aria-hidden
-        className={cx(
-          "absolute inset-0 animate-pulse bg-gradient-to-br from-slate-100 to-slate-200",
-          loaded && "opacity-0 transition-opacity duration-300"
-        )}
-      />
-      {/* blurred tiny preview */}
-      {thumb && (
-        <img
-          src={thumb}
-          alt=""
-          aria-hidden
-          className={cx(
-            "absolute inset-0 h-full w-full object-cover blur-xl scale-105",
-            loaded && "opacity-0 transition-opacity duration-300"
-          )}
-        />
-      )}
-      {/* main */}
       <img
         src={src}
         alt={alt}
         loading="lazy"
         decoding="async"
-        onLoad={() => setLoaded(true)}
-        /* responsive hint: card widths ~ 100% of column; heights vary */
-        sizes="(max-width: 640px) 100vw,
-               (max-width: 1024px) 50vw,
-               33vw"
-        className={cx(
-          "h-full w-full object-cover",
-          loaded ? "opacity-100 transition-opacity duration-300" : "opacity-0",
-          imgClass
-        )}
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        className={cx("h-full w-full object-cover", imgClass)}
       />
     </div>
   );
@@ -143,7 +113,7 @@ function useLightbox(total, qsync) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]); // functions are stable within this hook
+  }, [open]);
 
   return { open, idx, setIdx, openAt, close, prev, next, dialogRef, touch };
 }
@@ -173,7 +143,7 @@ const BrandBtn = ({ href, children, className = "", variant = "primary", externa
 export default function TourInnGallery() {
   const all = useImages();
   const qsync = useQueryState();
-  const location = useLocation(); // for safe query parsing
+  const location = useLocation();
 
   const WA_BOOK = `https://wa.me/9607860882?text=${encodeURIComponent(
     "Hi Tour Inn, I'd like to book a room.\nDates: __ to __\nGuests: __\nRoom type: __\nPlease share the best direct rate. Thanks!"
@@ -220,15 +190,15 @@ export default function TourInnGallery() {
 
   const roomCards = [
     { name: "Superior Room", copy: "Elegant interiors with queen/twin layout — perfect for short city stays.",
-      ...( (() => { const i = pick("Room.jpg") || all[0]; return { img: i?.src, thumb: i?.thumb }; })() ),
+      ...( (() => { const i = pick("Room.jpg") || all[0]; return { img: i?.src }; })() ),
       icons: ["🛏️ Queen/Twin","📶 Wi-Fi","📺 Smart TV","☕ Tea/Coffee"],
     },
     { name: "Deluxe Room", copy: "More space, lounge seating & warm lighting for comfy longer stays.",
-      ...( (() => { const i = pick("SideAngleofDeluxRoom") || pick("PersonalRoom") || all[1]; return { img: i?.src, thumb: i?.thumb }; })() ),
+      ...( (() => { const i = pick("SideAngleofDeluxRoom") || pick("PersonalRoom") || all[1]; return { img: i?.src }; })() ),
       icons: ["🛏️ King/Queen","❄️ AC","📺 Smart TV","🔐 Safe"],
     },
     { name: "Business Deluxe", copy: "Work-friendly layout; select rooms with city views.",
-      ...( (() => { const i = pick("PersonalRoomMirrorArea") || pick("PersonalRoom (2)") || all[2]; return { img: i?.src, thumb: i?.thumb }; })() ),
+      ...( (() => { const i = pick("PersonalRoomMirrorArea") || pick("PersonalRoom (2)") || all[2]; return { img: i?.src }; })() ),
       icons: ["🧑‍💻 Desk","📶 Fast Wi-Fi","☕ Coffee/Tea","🛁 Ensuite"],
     },
   ];
@@ -241,7 +211,7 @@ export default function TourInnGallery() {
 
   return (
     <div className="min-h-screen bg-[rgb(252,249,253)] text-slate-800">
-      {/* ========== HERO (banner FIRST) ========== */}
+      {/* ========== HERO (banner FIRST) — WhatsApp CTA REMOVED ========== */}
       <section className="relative isolate overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-slate-900" />
         {heroBanner ? (
@@ -262,9 +232,7 @@ export default function TourInnGallery() {
             Quiet stays • modern amenities • city convenience. Explore rooms, gallery & location.
           </p>
           <div className="mt-6 flex flex-wrap gap-2 sm:gap-3">
-            {/* Keep WhatsApp on banner */}
-            <BrandBtn href={WA_BOOK} variant="primary">Book on WhatsApp</BrandBtn>
-
+            {/* Book on WhatsApp — REMOVED on banner as requested */}
             {/* View Gallery — white */}
             <a
               href="#gallery"
@@ -273,7 +241,6 @@ export default function TourInnGallery() {
             >
               View Gallery
             </a>
-
             {/* Share — white */}
             <BrandBtn
               href={typeof window !== "undefined" ? window.location.href : "#"}
@@ -342,9 +309,7 @@ export default function TourInnGallery() {
                   {r.img ? (
                     <SmoothImg
                       src={r.img}
-                      thumb={r.thumb}
                       alt={r.name}
-                      /* guard giant portrait pics from creating tall columns */
                       imgClass="max-h-[44vh] sm:max-h-[42vh] md:max-h-[40vh] lg:max-h-[36vh] xl:max-h-[34vh]"
                     />
                   ) : (
@@ -357,7 +322,6 @@ export default function TourInnGallery() {
                   <div className="mt-3 sm:mt-4 flex flex-wrap gap-2.5 sm:gap-3 text-slate-600 text-[13px] sm:text-sm">
                     {r.icons.map((t, j) => <span key={j} className="inline-flex items-center">{t}</span>)}
                   </div>
-                  {/* WhatsApp removed from room cards — only View Photos */}
                   <div className="mt-4 sm:mt-5">
                     <button
                       onClick={() => openAt(Math.min(i, Math.max(0, all.length-1)))}
@@ -377,7 +341,6 @@ export default function TourInnGallery() {
                   {(pick("OutsideViewOfKithenandroom") || all[3])?.src ? (
                     <SmoothImg
                       src={(pick("OutsideViewOfKithenandroom") || all[3]).src}
-                      thumb={(pick("OutsideViewOfKithenandroom") || all[3]).thumb}
                       alt="Family / Long stay"
                       imgClass="max-h-[46vh] md:max-h-none"
                     />
@@ -402,7 +365,7 @@ export default function TourInnGallery() {
         </div>
       </section>
 
-      {/* ========== GALLERY ========== */}
+      {/* ========== GALLERY (now ZERO white/blur overlay) ========== */}
       <section id="gallery" className="pb-14 sm:pb-16 md:pb-24">
         <div className="mx-auto max-w-[1180px] px-4 md:px-6">
           <header className="text-center mb-5 sm:mb-6 md:mb-8">
@@ -465,7 +428,6 @@ export default function TourInnGallery() {
                   >
                     <SmoothImg
                       src={img.src}
-                      thumb={img.thumb}
                       alt={`Tour Inn photo ${realIndex + 1}`}
                       imgClass="group-hover:scale-[1.01] transition-transform duration-300"
                     />
@@ -519,6 +481,7 @@ export default function TourInnGallery() {
               <h3 className="text-base sm:text-lg font-semibold text-slate-900">Tour Inn</h3>
               <p className="mt-2 text-sm text-slate-600">Ma. Leaves, Maaveyo Goalhi, Malé, Maldives</p>
               <div className="mt-4 flex flex-wrap gap-2 sm:gap-3">
+                {/* Location section pe WhatsApp reh sakta hai (banner se hataya gaya hai) */}
                 <BrandBtn href={WA_BOOK}>Book on WhatsApp</BrandBtn>
                 <a
                   href="tel:+9607860882"
@@ -597,7 +560,7 @@ export default function TourInnGallery() {
               </button>
             </div>
 
-            {/* index + thumbs (scrollable on mobile) */}
+            {/* index + thumbs */}
             <div className="mt-3 sm:mt-5 text-center text-white/85 text-xs sm:text-sm">{idx + 1} / {all.length}</div>
             <div className="mt-2 sm:mt-3 max-w-[96vw] sm:max-w-[92vw] overflow-x-auto">
               <div className="flex gap-2 sm:gap-2.5 px-1">

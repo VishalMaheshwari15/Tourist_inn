@@ -45,9 +45,11 @@ export default function Header() {
     { name: "Reviews", href: "/#reviews" },
   ];
 
+  // MOBILE MENU PROPERTIES ORDER:
+  // Tourist Inn → Tour Inn → Tourist Inn Grand
   const properties = [
-    { name: "Tour Inn", href: "/tour-inn" },
     { name: "Tourist Inn", href: "/tourist-inn" },
+    { name: "Tour Inn", href: "/tour-inn" },
     { name: "Tourist Inn Grand", href: "/tourist-inn-grand" }, // <-- exact route
   ];
 
@@ -144,7 +146,7 @@ export default function Header() {
         <>
           {/* dark veil */}
           <div
-            className="fixed inset-0 z-[999] bg-black/40 backdrop-blur-[2px]"
+            className="fixed inset-0 z=[999] bg-black/40 backdrop-blur-[2px]"
             onClick={() => setOpen(false)}
           />
           {/* panel */}
@@ -178,7 +180,7 @@ export default function Header() {
                       <a
                         href={l.href}
                         onClick={() => setOpen(false)}
-                        className="inline-block text-3xl sm:text-4xl font-semibold tracking-wide text-white hover:text-white/80 transition"
+                        className="inline-block text-3xl sm:text-4xl font-semibold tracking-wide text-white hover:text白/80 transition"
                       >
                         {l.name}
                       </a>
