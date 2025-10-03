@@ -1,6 +1,6 @@
-// src/components/Header.jsx — Fixed header + Mobile menu (100% working)
+// src/components/Header.jsx — Fixed header + Mobile menu (Home -> scroll to Hero)
 import { useEffect, useId, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 
 const WA = (t = "Hello! I'd like to book. Please share availability & rates.") =>
@@ -10,6 +10,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [raised, setRaised] = useState(false);
   const menuId = useId();
+  const loc = useLocation();
 
   // Lock page scroll when mobile menu is open (iOS-friendly)
   useEffect(() => {
@@ -38,8 +39,9 @@ export default function Header() {
 
   const brandGrad = "from-[#6A00FF] to-[#FF2EA8]";
 
+  // NOTE: Home points to /#top so we can land on hero
   const nav = [
-    { name: "Home", href: "/" },
+    { name: "Home", href: "/#top" },
     { name: "About", href: "/#about" },
     { name: "Properties", href: "/#properties" },
     { name: "Reviews", href: "/#reviews" },
@@ -50,12 +52,26 @@ export default function Header() {
   const properties = [
     { name: "Tourist Inn", href: "/tourist-inn" },
     { name: "Tour Inn", href: "/tour-inn" },
-    { name: "Tourist Inn Grand", href: "/tourist-inn-grand" }, // <-- exact route
+    { name: "Tourist Inn Grand", href: "/tourist-inn-grand" },
   ];
 
   const linkBase =
     "relative px-3 py-2 text-[15px] rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/40";
   const linkColor = "text-slate-700 hover:text-slate-900";
+
+  // Smooth scroll to hero/top when already on Home
+  const goHomeSmooth = (e) => {
+    // if already on the homepage route
+    if (loc.pathname === "/") {
+      e.preventDefault();
+      // try an element with id="top" (recommended), else scroll to window top
+      const el = document.getElementById("top");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      else window.scrollTo({ top: 0, behavior: "smooth" });
+      setOpen(false);
+    }
+    // if not on home, allow navigation to /#top naturally
+  };
 
   return (
     <>
@@ -71,8 +87,14 @@ export default function Header() {
       >
         <div className="mx-auto w-full max-w-[1180px] px-4 md:px-6">
           <div className="h-16 md:h-[76px] grid grid-cols-[auto_1fr_auto] items-center gap-3">
-            {/* logo */}
-            <Link to="/" aria-label="Home" className="inline-flex items-center shrink-0">
+            {/* logo (acts like Home) */}
+            {/* Use a normal <a> so hash works; intercept if already on home */}
+            <a
+              href="/#top"
+              aria-label="Home"
+              className="inline-flex items-center shrink-0"
+              onClick={goHomeSmooth}
+            >
               <img
                 src={logo}
                 alt="Tourist Inn"
@@ -80,13 +102,18 @@ export default function Header() {
                 draggable="false"
                 decoding="async"
               />
-            </Link>
+            </a>
 
             {/* center nav (desktop) */}
             <nav className="hidden md:flex justify-center items-center gap-1">
               {nav.map((item) =>
                 item.href.startsWith("/#") ? (
-                  <a key={item.name} href={item.href} className={`${linkBase} ${linkColor} group`}>
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    onClick={item.name === "Home" ? goHomeSmooth : undefined}
+                    className={`${linkBase} ${linkColor} group`}
+                  >
                     <span className="relative">
                       {item.name}
                       <span className="absolute -right-2 -top-1 h-1 w-1 rounded-full bg-slate-800/70 opacity-0 group-hover:opacity-100" />
@@ -146,7 +173,7 @@ export default function Header() {
         <>
           {/* dark veil */}
           <div
-            className="fixed inset-0 z=[999] bg-black/40 backdrop-blur-[2px]"
+            className="fixed inset-0 z-[999] bg-black/40 backdrop-blur-[2px]"
             onClick={() => setOpen(false)}
           />
           {/* panel */}
@@ -179,8 +206,11 @@ export default function Header() {
                     <li key={l.name}>
                       <a
                         href={l.href}
-                        onClick={() => setOpen(false)}
-                        className="inline-block text-3xl sm:text-4xl font-semibold tracking-wide text-white hover:text白/80 transition"
+                        onClick={(e) => {
+                          if (l.name === "Home") goHomeSmooth(e);
+                          else setOpen(false);
+                        }}
+                        className="inline-block text-3xl sm:text-4xl font-semibold tracking-wide text-white hover:text-white/80 transition"
                       >
                         {l.name}
                       </a>
